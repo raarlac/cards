@@ -9,6 +9,9 @@ public class CardScript : MonoBehaviour
     GameObject currentCard;
     [SerializeField] TextAsset text;
     string[] linesInFile;
+
+    private List<string> cardTexts;
+    private List<string> usedCardTexts;
     // Start is called before the first frame update
     IEnumerator Start()
     {
@@ -48,22 +51,50 @@ public class CardScript : MonoBehaviour
             ,"Em relação aos tipos de clima no Brasil, marque qual clima abrange uma porção maior do território e melhor caracteriza o país:\n\na) Clima Semiárido\nb) Clima Equatorial\nc) Clima Subtropical\nd) Clima Tropical\ne) Clima Desértico\n\nAlternativa correta: D"
             ,"Em relação aos tipos climáticos encontrados no Brasil, a afirmação errada é:\n\na) O clima equatorial apresenta elevados índices pluviométricos e temperaturas médias acima de 22 °C.\nb) O clima subtropical apresenta pequenas amplitudes térmicas e chuvas concentradas no verão.\n\nAlternativa correta: D"
             ,"O Pantanal é um tipo de bioma que se caracteriza por ser uma das maiores planícies inundáveis do planeta. Quais estados brasileiros que possuem esse bioma.\n\na) Goiás e Mato Grosso\nb) Bahia e Minas Gerais\nc) Pará e Amazonas\nd) Mato Grosso e Mato Grosso do Sul\ne) Rio Grande do Sul e Santa Catarina\n\nAlternativa correta: D"
-            ,"O Pantanal é um tipo de bioma que se caracteriza por ser uma das maiores planícies inundáveis do planeta. Quais estados brasileiros que possuem esse bioma.\n\na) Goiás e Mato Grosso\nb) Bahia e Minas Gerais\nc) Pará e Amazonas\nd) Mato Grosso e Mato Grosso do Sul\ne) Rio Grande do Sul e Santa Catarina\n\nAlternativa correta: D"
             ,"Sobre o território brasileiro, qual alternativa está INCORRETA:\n\na) o Brasil é um país com dimensões continentais.\nb) a extensão do território brasileiro denuncia a grande distância de seus pontos extremos.\nc) a localização do Brasil indica-se por longitudes negativas, no hemisfério ocidental.\nd) a grande variação de latitudes explica a homogeneidade climática do país.\n\nAlternativa correta: D"
 
 
 
-
        };
+        
+        cardTexts = new List<string>(linesInFile);
+        usedCardTexts = new List<string>();
+        StartCoroutine(TriggerCard());
     }
 
-    // Update is called once per frame
-    void Update()
+    IEnumerator TriggerCard()
     {
-        if(Input.GetMouseButtonDown(0))
+        while (true)
         {
-            currentCard.GetComponent<Animator>().SetTrigger("turn");
-            currentCard.GetComponentInChildren<TextMeshProUGUI>().text = linesInFile[0];
+            if (Input.GetMouseButtonDown(0))
+            {
+                Debug.Log("Turn card");
+                string cardText = cardTexts[Random.Range(0, cardTexts.Count-1)];
+                cardTexts.Remove(cardText);
+                usedCardTexts.Add(cardText);
+
+                if (cardTexts.Count == 0)
+                {
+                    cardTexts = usedCardTexts;
+                    usedCardTexts = new List<string>();
+                }
+        
+                currentCard.GetComponent<Animator>().SetTrigger("turn");
+                currentCard.GetComponentInChildren<TextMeshProUGUI>().text = cardText;
+                yield return new WaitForSeconds(0.5f);
+                while (true)
+                {
+                    if (Input.GetMouseButtonDown(0))
+                    {
+                        Debug.Log("Dismiss card");
+                        currentCard.GetComponent<Animator>().SetTrigger("turn");
+                        yield return new WaitForSeconds(0.5f);
+                        break;
+                    }
+                    yield return null;
+                }
+            }
+            yield return null;
         }
     }
 }
